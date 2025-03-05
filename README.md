@@ -20,7 +20,7 @@ This repository contains a case study analyzing sales and profitability trends f
 - **Tableau**: Planning to Showcase insights through visuals to present hypotheses, required data, and next steps outlined in the case study.
 
 ## How to Use 
-1. Clone the repository: https://github.com/Ayushkumar71/EcomCaseStudy.git
+1. Clone the repository:
    ```bash
    git clone https://github.com/Ayushkumar71/EcomCaseStudy.git
    ```
