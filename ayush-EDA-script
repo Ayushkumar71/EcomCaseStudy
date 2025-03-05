@@ -1,0 +1,244 @@
+
+
+
+------------- DATABASE EXPLORATION ------------------
+-----------------------------------------------------
+
+ 
+
+-- Show Tables present in our database 
+SELECT
+  table_name
+FROM
+  `abstract-key-415803.ecomcasestudy1.INFORMATION_SCHEMA.TABLES`;
+
+
+
+-- Show dim_customers schema using the database name
+SELECT
+  *
+FROM
+  `abstract-key-415803`.`ecomcasestudy1`.`INFORMATION_SCHEMA.TABLES`
+WHERE
+  table_name = 'dim_customers';
+
+
+
+
+------------- DATABASE EXPLORATION ------------------
+-----------------------------------------------------
+
+-- ?? what is that above ?
+
+
+
+
+---------------- EXPLORATORY DATA ANALYSIS ---------------------
+----------------------------------------------------------------
+
+
+
+--------------- DIMENSION & MEASURE -------------------
+-------------------------------------------------------
+
+
+
+-- Query exploring which columns can be labelled as measures, "marital_status" a dimension
+SELECT
+  DISTINCT marital_status,
+FROM
+  `abstract-key-415803`.`ecomcasestudy1.dim_customers`;
+
+
+
+
+-- Query exploring columns in fact_sales , "sales_amount" a measure
+SELECT
+  MIN(sales_amount),
+  AVG(sales_amount)
+FROM
+  `abstract-key-415803`.`ecomcasestudy1.fact_sales`;
+
+
+
+
+
+--------------- DIMENSIONS EXPLORATION -----------------
+--------------------------------------------------------
+
+
+
+-- Query exploring the categories and name columns in product table
+SELECT
+  DISTINCT category,
+   subcategory,
+   product_name
+FROM
+  `ecomcasestudy1.dim_products`;
+
+
+
+
+
+---------------- DATE EXPLORATION ---------------------
+-------------------------------------------------------
+
+
+
+-- Understanding the distrubtion of values in start_age, Notices opportunity to create a new column "product_age"
+SELECT
+  MAX(start_date) AS youngest_product_date,
+  MIN(DATE_DIFF(CURRENT_DATE(), start_date, YEAR)) AS youngest_product_age,
+  MIN(start_date) AS oldest_product_date,
+  MAX(DATE_DIFF(CURRENT_DATE(), start_date, YEAR)) AS oldest_product_age,
+FROM
+  `abstract-key-415803`.`ecomcasestudy1`.`dim_products`;
+
+
+
+
+-- Understanding the distribution for columns birthdate and create_date, Notices opportunity to create column, "customer_age"
+-- Unanticipated distribution for create_date, returning back to ASK phase, returning with solution in "DATABASE UPDATION"
+SELECT
+  MIN(birthdate) AS min_birthdate,
+  MAX(birthdate) AS max_birthdate,
+  AVG(DATE_DIFF(current_date(), birthdate, YEAR)) AS avg_birthage,
+  0 AS Na,  --- Seperator
+  MIN(create_date) AS min_create_date,
+  MAX(create_date) AS max_create_date,
+  AVG(DATE_DIFF(current_date(), create_date, YEAR)) AS avg_create_age  -- returning in negative before updation
+FROM 
+  `ecomcasestudy1.dim_customers`;
+
+
+
+
+--------------- MEASURE EXPLORATION -------------------
+-------------------------------------------------------
+
+
+
+-- Find the total number of orders
+SELECT 
+  COUNT(order_number) as Nr_of_orders,
+  COUNT( DISTINCT order_number) as Nr_of_orders_distinct -- The actual number of shippments made.
+FROM 
+`ecomcasestudy1.fact_sales`;
+
+
+
+-- Generate a report that shows all the key metrics of the business
+SELECT 'Total Sales' AS measure_name, SUM(sales_amount) AS measure_value FROM `ecomcasestudy1.fact_sales` 
+UNION ALL
+SELECT 'Total Quantity', SUM(quantity) FROM `ecomcasestudy1.fact_sales`
+UNION ALL
+SELECT 'Average Price', AVG(price) FROM `ecomcasestudy1.fact_sales`
+UNION ALL
+SELECT 'Total Nr Orders', COUNT(DISTINCT order_number) FROM `ecomcasestudy1.fact_sales`
+UNION ALL
+SELECT 'Total Nr Products', COUNT(product_name) FROM `ecomcasestudy1.dim_products`
+UNION ALL
+SELECT 'Total Nr Customers', COUNT(customer_key) FROM `ecomcasestudy1.dim_customers`;
+
+
+
+
+
+--------------- MAGNITUDE ANALYSIS -------------------
+------------------------------------------------------
+
+
+
+-- Sufficiently done through queries in other segments. 
+-- Now move ahead to devote time for more nuanced insights.
+
+
+
+
+
+
+
+
+
+
+---------------- RANKING ANALYSIS --------------------
+------------------------------------------------------
+
+
+-- Which 5 products generate the highest revenue?
+SELECT
+  product_name,
+  SUM(CAST(sales_amount * quantity AS INT64)) AS Total_Revenue,
+FROM
+  `ecomcasestudy1`.`dim_products` AS t0
+RIGHT JOIN
+  `ecomcasestudy1`.`fact_sales` AS t1
+ON
+  t0.product_key = t1.product_key
+GROUP BY
+  product_name
+ORDER BY
+  Total_revenue DESC
+LIMIT 5;
+
+
+
+-- Which 5 products generate the highest revenue, This time we use a Window function
+-- This approach allows us to handle more complex queries as business needs evolve.
+SELECT * FROM 
+  (
+    SELECT
+      product_name,
+      SUM(t1.sales_amount * t1.quantity) AS Total_revenue,
+      ROW_NUMBER() OVER (ORDER BY SUM(t1.sales_amount * t1.quantity) DESC) AS Revenue_rank
+    FROM
+      `ecomcasestudy1`.`dim_products` AS t0
+    RIGHT JOIN
+      `ecomcasestudy1`.`fact_sales` AS t1
+    ON
+      t0.product_key = t1.product_key
+    GROUP BY
+      product_name
+  )
+WHERE Revenue_rank <= 5;
+
+
+
+
+-- Find the top 10 customers who have generated the highest revenue.
+SELECT * FROM 
+  (
+    SELECT
+      t0.customer_key,
+      t0.first_name, -- Was not aggregated but was mentioned in GROUP BY clause
+      t0.last_name,  -- Same as above
+      SUM(t1.sales_amount * t1.quantity) AS Total_revenue,
+      ROW_NUMBER() OVER (ORDER BY SUM(t1.sales_amount * t1.quantity) DESC) AS Revenue_rank
+    FROM
+      `ecomcasestudy1`.`dim_customers` AS t0
+    RIGHT JOIN
+      `ecomcasestudy1`.`fact_sales` AS t1
+    ON
+      t0.customer_key = t1.customer_key
+    GROUP BY
+      t0.customer_key,
+      t0.first_name,  -- as each customer key corresponds to a single fname & lname
+      t0.last_name
+  )
+WHERE Revenue_rank <= 10;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

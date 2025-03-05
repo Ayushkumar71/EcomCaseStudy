@@ -1,0 +1,156 @@
+
+
+
+
+----------------------- PROCESS DATABASE -----------------------------
+----------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+------------- BASIC PRELIMINARY VERIFICATION ----------------
+-------------------------------------------------------------
+
+
+
+
+-- checking for updation on create_date column as decided with stakeholders -- Pushing dates 2 years back
+SELECT
+  create_date,
+  DATE_SUB(create_date, INTERVAL 2 YEAR) AS updated_create_date
+FROM
+  `ecomcasestudy1.dim_customers`;
+
+
+-- Verifying nature of values to be inserted into new columns for products table
+SELECT
+  start_date,
+  DATE_DIFF(CURRENT_DATE(), start_date, YEAR) AS product_age -- Telling how long has the product been on the market for our brand
+FROM
+  `ecomcasestudy1.dim_products`;
+
+
+
+-- Same verification as above for sales table, delivery time same for all orders
+-- No updation for delivery time as the  interval remain same for all orders: 7 Days. 
+SELECT
+  order_date,
+  shipping_date,
+  DATE_DIFF(shipping_date, order_date, DAY) AS delivery_time
+FROM 
+  `ecomcasestudy1.fact_sales`
+ORDER BY
+  delivery_time DESC;
+
+
+
+-- Same verification for customers table, schema updation for customer_age.
+-- No updation for account_age as all accounts are new: {1,2} years.
+SELECT
+  birthdate,
+  DATE_DIFF(CURRENT_DATE(), birthdate, YEAR) AS customer_age,
+  create_date,
+  DATE_DIFF(CURRENT_DATE(), create_date, YEAR) AS account_age
+FROM 
+  `ecomcasestudy1.dim_customers`
+ORDER BY
+  account_age DESC;
+
+
+
+-- Same verification for products table, schema updation for the same.
+-- about potential of creating product_age, lets create it 
+SELECT
+  MIN(product_age) AS min_product_age,
+  MAX(product_age) AS max_product_age,
+  AVG(product_age) AS avg_product_age
+FROM (
+  SELECT
+    start_date,
+    DATE_DIFF(CURRENT_DATE(), start_date, YEAR) AS product_age
+  FROM
+    `abstract-key-415803`.`ecomcasestudy1`.`dim_products` ) AS product_ages;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------ DATA UPDATION ----------------------
+-------------------------------------------------------
+
+
+
+-- Update create_date column by reducing the year of each entry by 2
+UPDATE 
+  `ecomcasestudy1`.`dim_customers`
+SET 
+  create_date = DATE_SUB(create_date, INTERVAL 2 YEAR)
+WHERE 
+  create_date IS NOT NULL;
+
+
+-- Inserting values into the newly created column, customer_age
+-- Make sure that the column exists
+UPDATE
+  `ecomcasestudy1`.`dim_customers`
+SET
+  customer_age = DATE_DIFF(CURRENT_DATE(), birthdate, YEAR)
+WHERE 
+  TRUE;
+
+
+
+-- Inserting values into the newly created column, product_age
+-- Make sure that the column exists
+UPDATE
+  `ecomcasestudy1`.`dim_products`
+SET
+  product_age = DATE_DIFF(CURRENT_DATE(), start_date, YEAR)
+WHERE 
+  TRUE;
+
+
+
+
+
+
+----------------- SCHEMA UPDATION ---------------------
+-------------------------------------------------------
+
+
+-- Updating dim_customers schema by adding a new column
+-- ALTER TABLE 
+--   `ecomcasestudy1`.`dim_customers`
+-- ADD COLUMN 
+--   customer_age INT64;
+
+
+-- Updating dim_products schema by adding a new column
+-- ALTER TABLE 
+--   `ecomcasestudy1`.`dim_products`
+-- ADD COLUMN 
+--   product_age INT64;
+
+
+
+
+
+
+
+
