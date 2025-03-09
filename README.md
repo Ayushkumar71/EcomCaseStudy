@@ -1,6 +1,8 @@
 # An Ecom's CRM Case study 
 
-(https://public.tableau.com/views/CustomerDashboard-ForKPIandleaderboard/CustomerDashboard?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)[Tableau Dashboard]
+#[Tableau Dashboard](https://public.tableau.com/views/CustomerDashboard-ForKPIandleaderboard/CustomerDashboard?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
+
 ## Overview
 This repository contains a case study analyzing sales and profitability trends for a DTC brand. SQL-driven Customer 360° and Product Performance reports assess performance across categories, regions, and time periods for actionable insights.
 
