@@ -1,6 +1,6 @@
 # An Ecom's CRM Case study 
 
-#[Tableau Dashboard](https://public.tableau.com/views/CustomerDashboard-ForKPIandleaderboard/CustomerDashboard?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+[Tableau Dashboard](https://public.tableau.com/views/CustomerDashboard-ForKPIandleaderboard/CustomerDashboard?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
 
 
 ## Overview
